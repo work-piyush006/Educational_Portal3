@@ -1,15 +1,13 @@
-name: Android APK Build
+name: Android APK Build (Debug V1 Embedding)
 
 on:
   push:
     branches:
-      - main   # jis branch se build karna hai
+      - main   # jis branch pe tu build kar raha hai
 
 jobs:
   build:
-    name: Build APK
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -17,11 +15,20 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'   # 👈 latest stable specify karo
+          flutter-version: '3.24.3'
           channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
+
+      # ⚡ Debug step: yahi se culprit plugin pakadenge
+      - name: Debug: Find V1 embedding plugins
+        run: |
+          echo ">>> Printing dependencies (compact):"
+          flutter pub deps --style=compact || true
+
+          echo ">>> Searching for V1 embedding traces..."
+          grep -R --line-number -E "io.flutter.app|registerWith|GeneratedPluginRegistrant|io.flutter.plugin.common.PluginRegistry" "$HOME/.pub-cache" || true
 
       - name: Clean build
         run: flutter clean
@@ -30,7 +37,7 @@ jobs:
         run: flutter build apk --release
 
       - name: Upload APK as artifact
-        uses: actions/upload-artifact@v4   # 👈 v3 → v4
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
