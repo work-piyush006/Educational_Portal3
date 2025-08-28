@@ -1,4 +1,4 @@
-name: Android APK Build
+name: Android Release APK Build
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - main   # Ya jis branch se build karna hai
 
 jobs:
-  build:
-    name: Build APK
+  build-release:
+    name: Build Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.13.0'   # Explicit latest stable Flutter version
+          flutter-version: '3.35.2'   # Flutter version with Dart >=3.4.0
 
       - name: Install dependencies
         run: flutter pub get
@@ -26,11 +26,11 @@ jobs:
       - name: Clean build
         run: flutter clean
 
-      - name: Build release APK
+      - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      - name: Upload APK as artifact
-        uses: actions/upload-artifact@v4   # Updated to v4
+      - name: Upload Release APK as artifact
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
