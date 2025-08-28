@@ -3,7 +3,7 @@ name: Android APK Build
 on:
   push:
     branches:
-      - main   # Ya jis branch se build karna hai
+      - main   # jis branch se build karna hai
 
 jobs:
   build:
