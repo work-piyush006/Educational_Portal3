@@ -1,0 +1,38 @@
+name: educational_portal3
+description: A simple educational portal app for viewing PDFs.
+publish_to: "none" # private project
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+
+  # PDF Viewer
+  pdfx: ^2.6.0
+
+  # Open file externally
+  open_file: ^3.3.2
+
+  # Path access (documents dir)
+  path_provider: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/logo.png
+    - assets/pdfs/class11/
+    - assets/pdfs/class12/
+    - assets/pdfs/dpp/
