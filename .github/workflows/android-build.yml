@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,14 +22,14 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # ⚡ Debug step to find culprit plugin
-      - name: Debug: Find V1 embedding plugins
+      # ⚡ Debug step to find old V1 embedding plugins
+      - name: Debug: Find V1 embedding plugins in project
         run: |
           echo ">>> Dependencies list (compact):"
           flutter pub deps --style=compact || true
 
-          echo ">>> Searching for old V1 embedding traces..."
-          grep -R --line-number -E "io.flutter.app|registerWith|GeneratedPluginRegistrant|io.flutter.plugin.common.PluginRegistry" "$HOME/.pub-cache" || true
+          echo ">>> Searching for old V1 embedding traces in project..."
+          grep -R --line-number -E "io.flutter.app|registerWith|GeneratedPluginRegistrant|io.flutter.plugin.common.PluginRegistry" . || true
 
       - name: Clean build
         run: flutter clean
@@ -36,8 +37,17 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Upload APK as artifact
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
