@@ -1,6 +1,6 @@
 name: educational_portal3
-description: A simple educational portal app for viewing PDFs.
-publish_to: "none" # private project
+description: An offline/online app for Class 11 & 12 Computer Science students (User + Admin)
+publish_to: "none"
 
 version: 1.0.0+1
 
@@ -13,15 +13,23 @@ dependencies:
 
   # UI
   cupertino_icons: ^1.0.8
+  flutter_rating_bar: ^4.0.1
+  carousel_slider: ^4.2.1
 
   # PDF Viewer
   pdfx: ^2.6.0
 
-  # Open file externally
-  open_file: ^3.3.2
+  # File picker
+  file_picker: ^8.0.3
 
   # Path access (documents dir)
   path_provider: ^2.1.4
+
+  # Preferences storage
+  shared_preferences: ^2.2.2
+
+  # URL launcher
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
