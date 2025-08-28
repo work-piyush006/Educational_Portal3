@@ -25,38 +25,26 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 4️⃣ Debug: Find V1 embedding plugins in project (safe)
-      - name: Debug: Find V1 embedding plugins in project
-        run: |
-          echo ">>> Dependencies list (compact):"
-          flutter pub deps --style=compact || echo "Failed to list deps, continuing..."
-
-          echo ">>> Searching for old V1 embedding traces in project..."
-          # Agar grep fail ho jaaye, workflow fail nahi karega
-          set +e
-          grep -R --line-number -E "io.flutter.app|registerWith|GeneratedPluginRegistrant|io.flutter.plugin.common.PluginRegistry" . || true
-          set -e
-
-      # 5️⃣ Clean build
+      # 4️⃣ Clean build
       - name: Clean build
         run: flutter clean
 
-      # 6️⃣ Build release APK
+      # 5️⃣ Build release APK
       - name: Build release APK
         run: flutter build apk --release
 
-      # 7️⃣ Build debug APK
+      # 6️⃣ Build debug APK
       - name: Build debug APK
         run: flutter build apk --debug
 
-      # 8️⃣ Upload Release APK
+      # 7️⃣ Upload Release APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      # 9️⃣ Upload Debug APK
+      # 8️⃣ Upload Debug APK
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
