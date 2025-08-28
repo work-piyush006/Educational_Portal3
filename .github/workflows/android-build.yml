@@ -1,9 +1,9 @@
-name: Android APK Build (Debug V1 Embedding)
+name: Android APK Build (Debug + Release)
 
 on:
   push:
     branches:
-      - main   # jis branch pe tu build kar raha hai
+      - main   # jis branch pe build karna hai
 
 jobs:
   build:
@@ -21,13 +21,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # ⚡ Debug step: yahi se culprit plugin pakadenge
+      # ⚡ Debug step to find culprit plugin
       - name: Debug: Find V1 embedding plugins
         run: |
-          echo ">>> Printing dependencies (compact):"
+          echo ">>> Dependencies list (compact):"
           flutter pub deps --style=compact || true
 
-          echo ">>> Searching for V1 embedding traces..."
+          echo ">>> Searching for old V1 embedding traces..."
           grep -R --line-number -E "io.flutter.app|registerWith|GeneratedPluginRegistrant|io.flutter.plugin.common.PluginRegistry" "$HOME/.pub-cache" || true
 
       - name: Clean build
