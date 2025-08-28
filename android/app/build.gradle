@@ -16,9 +16,25 @@ android {
         versionName "1.0"
     }
 
+    signingConfigs {
+        release {
+            // TODO: Update these paths and credentials for your keystore!
+            storeFile file("release-key.jks")
+            storePassword "your_keystore_password"
+            keyAlias "your_key_alias"
+            keyPassword "your_key_password"
+            v1SigningEnabled false   // Disable V1 (deprecated)
+            v2SigningEnabled true    // Enable V2 (required)
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        debug {
+            // Debug signing config can remain default
         }
     }
 }
