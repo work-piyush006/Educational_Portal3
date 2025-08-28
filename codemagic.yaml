@@ -1,18 +1,20 @@
 workflows:
-  default-workflow:
-    name: Flutter Build (Educational Portal)
+  android-release:
+    name: Android APK Build (Release)
     max_build_duration: 60
-    instance_type: linux_x2
+    instance_type: linux   # Free plan friendly
 
     environment:
       flutter: stable
-      xcode: latest
 
     scripts:
-      - name: Get dependencies
+      - name: Clean Project
+        script: flutter clean
+
+      - name: Install Dependencies
         script: flutter pub get
 
-      - name: Build APK (release)
+      - name: Android APK (Release)
         script: flutter build apk --release
 
     artifacts:
