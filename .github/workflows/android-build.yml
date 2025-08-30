@@ -1,4 +1,4 @@
-name: Detect V1 Usage
+name: Detect Flutter V1 Embedding
 
 on:
   push:
@@ -9,16 +9,31 @@ jobs:
   scan-v1:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Search for v1 usage
+      - name: Scan Android code for V1 embedding
         run: |
-          echo "🔍 Scanning repository for 'v1'..."
-          # Grep recursive search for 'v1' (case sensitive)
-          if grep -rnw . -e "v1"; then
-            echo "::warning:: 'v1' detected above (file:line). Please verify and upgrade if needed."
+          echo "🔍 Scanning android/ folder for Flutter V1 embedding markers..."
+          found=false
+
+          # Only check android/ folder (ignore assets, pdf, workflows etc.)
+          if grep -RIn "io.flutter.app.FlutterActivity" android/; then found=true; fi
+          if grep -RIn "GeneratedPluginRegistrant" android/; then found=true; fi
+          if grep -RIn "registerWith(" android/; then found=true; fi
+          if grep -RIn "io.flutter.plugin.common.PluginRegistry" android/; then found=true; fi
+
+          if [ "$found" = true ]; then
+            echo "::error:: ❌ V1 embedding code detected above. Please migrate to V2."
             exit 1
           else
-            echo "✅ No 'v1' usage found in repo."
+            echo "✅ No V1 embedding code found in android/ folder."
           fi
+
+      - name: Show MainActivity (first 40 lines)
+        run: |
+          echo "📂 Preview of MainActivity file:"
+          find android/app/src/main -type f -name "MainActivity.*" | while read file; do
+            echo "---- $file ----"
+            head -n 40 "$file"
+          done || true
