@@ -1,4 +1,4 @@
-name: Check for v1 usage
+name: Detect V1 Usage
 
 on:
   push:
@@ -9,19 +9,16 @@ jobs:
   scan-v1:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Scan repo for v1 usage
+      - name: Search for v1 usage
         run: |
-          echo "🔍 Scanning for v1 references..."
-          matches=$(grep -rnw . -e 'v1' || true)
-
-          if [ -z "$matches" ]; then
-            echo "✅ No v1 usage found!"
-          else
-            echo "❌ Found v1 usage in repository:"
-            echo "$matches"
-            echo "::error:: v1 references detected. Please update to newer version."
+          echo "🔍 Scanning repository for 'v1'..."
+          # Grep recursive search for 'v1' (case sensitive)
+          if grep -rnw . -e "v1"; then
+            echo "::warning:: 'v1' detected above (file:line). Please verify and upgrade if needed."
             exit 1
+          else
+            echo "✅ No 'v1' usage found in repo."
           fi
