@@ -1,60 +1,27 @@
-name: Scan for Flutter v1 embedding (detect culprit)
+name: Check for v1 usage
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
-  scan_v1:
+  scan-v1:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Flutter (needed to run pub commands)
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
-
-      - name: Print repo files (summary)
+      - name: Scan repo for v1 usage
         run: |
-          echo "Repository root files:"
-          ls -la
+          echo "🔍 Scanning for v1 references..."
+          matches=$(grep -rnw . -e 'v1' || true)
 
-      - name: Search for v1 embedding signatures
-        run: |
-          echo "Searching for common v1 embedding markers..."
-          # Common markers for v1 embedding / old plugins
-          grep -R --line-number --pretty --null "io.flutter.app.FlutterActivity" || true
-          grep -R --line-number --pretty --null "GeneratedPluginRegistrant" || true
-          grep -R --line-number --pretty --null "registerWith(" || true
-          grep -R --line-number --pretty --null "io.flutter.plugin.common.PluginRegistry" || true
-          echo "Search complete."
-
-      - name: Show android MainActivity files
-        run: |
-          echo "android/app/src/main/java and kotlin contents (if present):"
-          find android/app/src/main -maxdepth 4 -type f -name "*.kt" -o -name "*.java" -o -name "*.xml" | sed -n '1,200p' || true
-          echo "---- show file heads for discovered files ----"
-          for f in $(find android/app/src/main -type f -name "*.kt" -o -name "*.java" | head -n 20); do
-            echo "=== $f ==="
-            sed -n '1,120p' "$f"
-          done || true
-
-      - name: flutter pub outdated (shows old plugins)
-        run: |
-          flutter pub get || true
-          flutter pub outdated || true
-
-      - name: Optional - list android plugin registrant files (if any)
-        run: |
-          echo "Listing android plugins files under .android/ and ios/ ..."
-          find . -type f -path "*/.android/*" -o -path "*/android/*" | sed -n '1,200p' || true
-
-      - name: Upload log as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: v1-scan-log
-          path: |
-            ${{ github.workspace }}
+          if [ -z "$matches" ]; then
+            echo "✅ No v1 usage found!"
+          else
+            echo "❌ Found v1 usage in repository:"
+            echo "$matches"
+            echo "::error:: v1 references detected. Please update to newer version."
+            exit 1
+          fi
