@@ -1,52 +1,60 @@
-name: Android APK Build (Debug + Release)
+name: Scan for Flutter v1 embedding (detect culprit)
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main   # jis branch pe build karna hai
+    branches: [ main ]
 
 jobs:
-  build:
+  scan_v1:
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      # 2️⃣ Set up Flutter
-      - name: Set up Flutter
+      - name: Set up Flutter (needed to run pub commands)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'
-          channel: 'stable'
+          flutter-version: 'stable'
 
-      # 3️⃣ Install dependencies
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Print repo files (summary)
+        run: |
+          echo "Repository root files:"
+          ls -la
 
-      # 4️⃣ Clean build
-      - name: Clean build
-        run: flutter clean
+      - name: Search for v1 embedding signatures
+        run: |
+          echo "Searching for common v1 embedding markers..."
+          # Common markers for v1 embedding / old plugins
+          grep -R --line-number --pretty --null "io.flutter.app.FlutterActivity" || true
+          grep -R --line-number --pretty --null "GeneratedPluginRegistrant" || true
+          grep -R --line-number --pretty --null "registerWith(" || true
+          grep -R --line-number --pretty --null "io.flutter.plugin.common.PluginRegistry" || true
+          echo "Search complete."
 
-      # 5️⃣ Build release APK
-      - name: Build release APK
-        run: flutter build apk --release
+      - name: Show android MainActivity files
+        run: |
+          echo "android/app/src/main/java and kotlin contents (if present):"
+          find android/app/src/main -maxdepth 4 -type f -name "*.kt" -o -name "*.java" -o -name "*.xml" | sed -n '1,200p' || true
+          echo "---- show file heads for discovered files ----"
+          for f in $(find android/app/src/main -type f -name "*.kt" -o -name "*.java" | head -n 20); do
+            echo "=== $f ==="
+            sed -n '1,120p' "$f"
+          done || true
 
-      # 6️⃣ Build debug APK
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: flutter pub outdated (shows old plugins)
+        run: |
+          flutter pub get || true
+          flutter pub outdated || true
 
-      # 7️⃣ Upload Release APK
-      - name: Upload Release APK
+      - name: Optional - list android plugin registrant files (if any)
+        run: |
+          echo "Listing android plugins files under .android/ and ios/ ..."
+          find . -type f -path "*/.android/*" -o -path "*/android/*" | sed -n '1,200p' || true
+
+      - name: Upload log as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-      # 8️⃣ Upload Debug APK
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: v1-scan-log
+          path: |
+            ${{ github.workspace }}
