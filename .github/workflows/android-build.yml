@@ -17,8 +17,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.13.0   # Dart 3.35.2+ compatible
-
+          flutter-version: 3.22.2   # Use current stable version
       # 1. Scan for V1 embedding in Android folder
       - name: Scan Android code for V1 embedding
         run: |
