@@ -1,4 +1,4 @@
-name: Detect Flutter V1 Embedding
+name: Flutter CI - V1 Check + Dependency Check + Build APK
 
 on:
   push:
@@ -6,18 +6,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  scan-v1:
+  flutter-ci:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.22.2   # Use current stable version
+
+      # 1. Scan for V1 embedding in Android folder
       - name: Scan Android code for V1 embedding
         run: |
           echo "🔍 Scanning android/ folder for Flutter V1 embedding markers..."
           found=false
-
-          # Only check android/ folder (ignore assets, pdf, workflows etc.)
           if grep -RIn "io.flutter.app.FlutterActivity" android/; then found=true; fi
           if grep -RIn "GeneratedPluginRegistrant" android/; then found=true; fi
           if grep -RIn "registerWith(" android/; then found=true; fi
@@ -30,10 +36,20 @@ jobs:
             echo "✅ No V1 embedding code found in android/ folder."
           fi
 
-      - name: Show MainActivity (first 40 lines)
+      # 2. Dependency check
+      - name: Check outdated dependencies
         run: |
-          echo "📂 Preview of MainActivity file:"
-          find android/app/src/main -type f -name "MainActivity.*" | while read file; do
-            echo "---- $file ----"
-            head -n 40 "$file"
-          done || true
+          echo "📦 Checking for outdated Flutter packages..."
+          flutter pub get
+          flutter pub outdated || true
+
+      # 3. Build APK
+      - name: Build release APK
+        run: flutter build apk --release --split-per-abi
+
+      # 4. Upload APK artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/*.apk
