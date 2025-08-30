@@ -17,7 +17,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.22.2   # Use current stable version
+          flutter-version: 3.13.0   # Dart 3.35.2+ compatible
 
       # 1. Scan for V1 embedding in Android folder
       - name: Scan Android code for V1 embedding
@@ -43,11 +43,15 @@ jobs:
           flutter pub get
           flutter pub outdated || true
 
-      # 3. Build APK
+      # 3. Run Flutter Lints
+      - name: Run Flutter Lints
+        run: flutter analyze
+
+      # 4. Build APK
       - name: Build release APK
         run: flutter build apk --release --split-per-abi
 
-      # 4. Upload APK artifact
+      # 5. Upload APK artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
